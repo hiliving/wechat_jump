@@ -32,7 +32,7 @@ function png2jpg($srcPathName, $delOri=true)
  * 发送命令控制手机截图复制到F盘
  */
 function pull_screenshot() {
-    $screenShell = "cd C:\Users\Administrator&adb shell /system/bin/screencap -p /sdcard/screenshot.png&adb pull /sdcard/screenshot.png F:tiaoyitiao/screenshot.png";
+    $screenShell = "adb shell /system/bin/screencap -p /sdcard/screenshot.png&adb pull /sdcard/screenshot.png ".$GLOBALS['shootDir'];
     exec($screenShell);
 }
 
@@ -44,9 +44,11 @@ function jump($distance){
     $time = $distance*$param;
     $time = round($time,0);
     //计算完毕之后执行弹跳
-    $touchShell = "cd C:\Users\Administrator&adb shell input swipe 50 250 250 250 ".$time;
+    $touchShell = "adb shell input swipe 50 250 250 250 ".$time;
     exec($touchShell);
     //延迟2.5秒后截图出来
+    sleep(2.5);
+    pull_screenshot();
 }
 
 /**
@@ -56,10 +58,10 @@ function mmain(){
 	/*获取截图*/
 	pull_screenshot();
 	sleep(1);
-	png2jpg("F:tiaoyitiao/screenshot.png",true);
+	png2jpg($GLOBALS['shootDir'],true);
 	// sleep(1);
-	$url = 'F:tiaoyitiao/screenshot.jpg';
-	$img = imagecreatefromjpeg($url);  
+	$url = $GLOBALS['realDir'];
+	$img = imagecreatefromjpeg($url);
 	$img_info = getimagesize($url);
 	$p_w = $img_info[0];//图片宽度
 	$p_h = $img_info[1];//图片高度
@@ -156,8 +158,14 @@ function mmain(){
 	//然后就跳咯，勾股定理
 	jump(sqrt(($board_x - $piece_x) *($board_x - $piece_x) + ($board_y - $piece_y) *($board_y - $piece_y)));
 }
-for ($i=0; $i < 10; $i++) { 
-	sleep(1);
-	mmain();
+$savePath = "D:/tiaoyitiao/";
+if (!is_dir($savePath)){
+    mkdir($savePath);
+}
+$shootDir = $savePath."screenshot.png";
+$realDir = $savePath."screenshot.jpg";
+while(true){
+    sleep(rand(1,20)/10+0.5);//随机休息一段时间，避免微信监控作弊清零
+    mmain();
 }
 ?>
